@@ -4,19 +4,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.google.gson.Gson;
+
 import models.Lote;
 import models.Produto;
 import repositories.LoteRepository;
 import repositories.ProdutoRepository;
+import DTO.ProdutoDTO;
 
 public class ProdutoService {
 	
-	LoteRepository loteRep;
-	ProdutoRepository prodRep;
+	private LoteRepository loteRep;
+	private ProdutoRepository prodRep;
+	private Gson gson = new Gson();
 	
 	public ProdutoService(LoteRepository loteRep, ProdutoRepository prodRep) {
 		this.loteRep = loteRep;
 		this.prodRep = prodRep;
+	}
+	
+	public Collection<Produto> listarProdutos() {
+		return this.prodRep.getAll();
 	}
 	
 	public List<Produto> listarProdsLoteByName(String nome) {
@@ -24,7 +32,7 @@ public class ProdutoService {
 		return getProdsByName(nome, prods);
 	}
 
-	public List<Produto> listarProdByName(String nome) {
+	public List<Produto> listarProdsByName(String nome) {
 		return getProdsByName(nome, this.prodRep.getAll());
 	}
 
@@ -38,7 +46,6 @@ public class ProdutoService {
 		return(prodsResult);
 	}
 	
-
 	private List<Produto> getProdsWithLote() {
 		List<Produto> prods = new ArrayList<Produto>();
 		for (Lote lote : this.loteRep.getAll()) {
@@ -47,7 +54,12 @@ public class ProdutoService {
 		return(prods);
 	}
 
-	public void addProduto(Produto p) {
-		this.prodRep.addProduto(p);
+	public String addProduto(String jsonData) {
+		ProdutoDTO prodDTO= gson.fromJson(jsonData, ProdutoDTO.class);
+		Produto produto = new Produto(prodDTO.getNome(), prodDTO.getFabricante(), prodDTO.getPreco());
+		
+		this.prodRep.addProduto(produto);
+		
+		return produto.getId();
 	}
 }
